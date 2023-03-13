@@ -1,0 +1,62 @@
+from machine import Pin, SoftI2C
+import time
+
+# Define I2C address and servo registers
+I2C_ADDRESS = 0x08
+
+REG_ADD_REVISION = 0
+REG_ADD_SERVO_1 = 1
+REG_ADD_SERVO_2 = 2
+REG_ADD_SERVO_3 = 3
+REG_ADD_SERVO_4 = 4
+
+# Define servo control functions
+def i2c_read(register):
+    buf = bytearray(1)
+    buf[0] = register
+    value = 0
+    i2c.write(I2C_ADDRESS, buf, repeat=True)
+    value = i2c.read(I2C_ADDRESS, 1)
+    return value[0]
+
+def i2c_write(register, data):
+    buffer = bytearray(2)
+    buffer[0] = register
+    buffer[1] = data
+    i2c.write(I2C_ADDRESS, buffer)
+
+def disable_servo(servo):
+    if servo == 1000:
+        i2c_write(REG_ADD_SERVO_1, 0)
+        i2c_write(REG_ADD_SERVO_2, 0)
+        i2c_write(REG_ADD_SERVO_3, 0)
+        i2c_write(REG_ADD_SERVO_4, 0)
+    else:
+        i2c_write(servo, 0)
+
+def limit(value, min_value, max_value):
+    return min(max(value, min_value), max_value)
+
+def sets_servo_position(servo, position):
+    position = limit(position, 0, 180)
+    pulse_width = int(position * 20 / 18 + 50)
+
+    if servo == 1000:
+        i2c_write(REG_ADD_SERVO_1, pulse_width)
+        i2c_write(REG_ADD_SERVO_2, pulse_width)
+        i2c_write(REG_ADD_SERVO_3, pulse_width)
+        i2c_write(REG_ADD_SERVO_4, pulse_width)
+    else:
+        i2c_write(servo, pulse_width)
+
+# Initialize SoftI2C object
+i2c = SoftI2C(sda=Pin(0), scl=Pin(1))
+
+# Test the servo by moving it back and forth
+while True:
+    for angle in range(0, 181, 10):
+        sets_servo_position(REG_ADD_SERVO_1, angle)
+        time.sleep(0.5)
+    for angle in range(180, -1, -10):
+        sets_servo_position(REG_ADD_SERVO_1, angle)
+        time.sleep(0.5)

@@ -1,0 +1,15 @@
+from machine import Pin, PWM
+import time
+
+servo = PWM(Pin(14), freq=50)  # create PWM object for pin 14 with 50Hz frequency
+# servo = PWM(Pin(12), freq=50)  # create PWM object for pin 12 with 50Hz frequency
+# servo = PWM(Pin(15), freq=50)  # create PWM object for pin 15 with 50Hz frequency
+# servo = PWM(Pin(2), freq=50)  # create PWM object for pin 2 with 50Hz frequency
+
+while True:
+    for pos in range(0, 181, 1):  # goes from 0 degrees to 180 degrees
+        servo.duty(int(50 + ((pos/180) * 115)))  # map angle to duty cycle and set duty cycle
+        time.sleep_ms(15)  # wait 15ms for the servo to reach the position
+    for pos in range(180, -1, -1):  # goes from 180 degrees to 0 degrees
+        servo.duty(int(50 + ((pos/180) * 115)))  # map angle to duty cycle and set duty cycle
+        time.sleep_ms(15)  # wait 15ms for the servo to reach the position
