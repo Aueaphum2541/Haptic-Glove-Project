@@ -1,0 +1,43 @@
+#include <Arduino.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+#include <BleKeyboard.h>
+#include <Adafruit_NeoMatrix.h>
+
+BleKeyboard bleKeyboard;
+const int btnA = 36; // GPIO 36
+const int btnB = 4; // GPIO 4
+
+Adafruit_MPU6050 mpu;
+Adafruit_Sensor *accel_sensor;
+
+
+void setup() {
+  Serial.begin(115200);
+  bleKeyboard.setName("Aueaphum Keyboard");
+  bleKeyboard.begin();
+  pinMode(btnA, INPUT_PULLUP); // ปรับเป็น INPUT_PULLUP เพื่อให้ปุ่มทำงานเมื่อกด และปล่อยปุ่ม แล้วจึงทำงาน 
+  pinMode(btnB, INPUT_PULLUP); 
+  mpu.begin();
+  accel_sensor = mpu.getAccelerometerSensor();
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(bleKeyboard.isConnected()) {
+    if(digitalRead(btnA) == 0) { // ถ้าปุ่มถูกกด ให้ส่งค่า 'a' ไปยังคอมพิวเตอร์
+      bleKeyboard.write('a');
+    }
+    if(digitalRead(btnB) == 0) {
+      bleKeyboard.write('d'); // ถ้าปุ่มถูกกด ให้ส่งค่า 'd' ไปยังคอมพิวเตอร์
+    }
+  }
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+  if (a.acceleration.z > 0.5) {
+    bleKeyboard.write('a');
+  }
+  Serial.println(a.acceleration.z);
+  delay(100);
+}

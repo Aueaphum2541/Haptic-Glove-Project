@@ -1,0 +1,57 @@
+#include <Arduino.h>
+#include <Wire.h>
+
+#define MBits_I2C_ADDRESS 0x08
+
+#define REG_ADD_SERVO_1 1
+#define REG_ADD_SERVO_2 2
+#define REG_ADD_SERVO_3 3
+#define REG_ADD_SERVO_4 4
+
+void i2cWrite(uint8_t address, uint8_t data) {
+  Wire.beginTransmission(MBits_I2C_ADDRESS);
+  Wire.write(address);
+  Wire.write(data);
+  Wire.endTransmission();
+}
+
+void disableServo(uint8_t servo) {
+  if (servo == 1000) {
+    i2cWrite(REG_ADD_SERVO_1, 0);
+    i2cWrite(REG_ADD_SERVO_2, 0);
+    i2cWrite(REG_ADD_SERVO_3, 0);
+    i2cWrite(REG_ADD_SERVO_4, 0);
+  } else {
+    i2cWrite(servo, 0);
+  }
+}
+
+void setServoPosition(uint8_t servo, uint8_t position) {
+  position = constrain(position, 0, 180);
+  int pulseWidth = (position * 20 / 18 + 50);
+  if (servo == 1000) {
+    i2cWrite(REG_ADD_SERVO_1, pulseWidth);
+    i2cWrite(REG_ADD_SERVO_2, pulseWidth);
+    i2cWrite(REG_ADD_SERVO_3, pulseWidth);
+    i2cWrite(REG_ADD_SERVO_4, pulseWidth);
+  } else {
+    i2cWrite(servo, pulseWidth);
+  }
+}
+
+void setup() {
+  Wire.begin(22, 21);
+}
+
+void loop() {
+  // Your code here
+ // servo1 turn 0 to 180
+ 
+  setServoPosition(REG_ADD_SERVO_1, 0);
+  delay(1000);
+  setServoPosition(REG_ADD_SERVO_1, 180);
+  delay(1000);
+
+}
+
+

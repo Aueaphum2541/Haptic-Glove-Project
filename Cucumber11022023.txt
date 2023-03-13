@@ -1,0 +1,144 @@
+#include <Arduino.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+#include <Adafruit_NeoPixel.h>
+#include <PubSubClient.h>
+#include <WiFi.h>
+
+const char* ssid = "pun";
+const char* password = "123321123";
+const char* mqtt_server = "broker.hivemq.com"; //ตัวที่จะไปต่อเป็นอินเตอร์เน็ต ในที่นี้เป็น hivemq
+
+Adafruit_MPU6050 mpu;
+Adafruit_NeoPixel pixels(1, 18, NEO_GRB + NEO_KHZ800);
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+
+  pixels.clear();
+  switch(payload[0]){
+     case 'r':
+        pixels.setPixelColor(0, pixels.Color(50, 0, 0));
+        break;
+      case 'g':
+        pixels.setPixelColor(0, pixels.Color(0, 50, 0));
+        break;
+      case 'b':
+        pixels.setPixelColor(0, pixels.Color(0, 0, 50));
+        break;
+      default:
+        break;
+  //pixels.setPixelColor(0, pixels.Color(0, 0, 50));
+  pixels.show();
+}
+}
+
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Create a random client ID
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
+    // Attempt to connect
+    if (client.connect(clientId.c_str())) {
+      Serial.println("connected");
+      // Once connected, publish an announcement...
+      client.publish("outTopic", "hello world");
+      // ... and resubscribe
+      client.subscribe("tu/tse/aueaphum");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
+void setup_wifi() {
+
+  delay(10);
+  // We start by connecting to a WiFi network
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  randomSeed(micros());
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+  
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  Wire.begin(41,40);
+  if (!mpu.begin(0x68, &Wire)) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+  pixels.begin();
+  setup_wifi();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+sensors_event_t a, g, temp;
+mpu.getEvent(&a, &g, &temp);
+
+    /* Print out the values */
+Serial.print("AccelX:");
+Serial.print(a.acceleration.x);
+Serial.print(",");
+Serial.print("AccelY:");
+Serial.print(a.acceleration.y);
+Serial.print(",");
+Serial.print("AccelZ:");
+Serial.println(a.acceleration.z);
+
+//pixels.clear();
+
+//uint8_t y = (abs(a.acceleration.y * 10));
+//uint8_t z = (abs(a.acceleration.z - 9.0)*10);
+//uint8_t x = (abs(a.acceleration.x * 10));
+
+//pixels.setPixelColor(0, pixels.Color(x, y, z));
+//pixels.show();
+char msg[50];
+sprintf(msg, "{\"x\":%.2f, \"y\":%.2f, \"z\":%.2f}", a.acceleration.x, a.acceleration.y, a.acceleration.z);
+client.publish("tu/tse/status/aueaphum", msg);
+//Serial.println(pixels.Color(x, y, z));
+delay(1000);
+}

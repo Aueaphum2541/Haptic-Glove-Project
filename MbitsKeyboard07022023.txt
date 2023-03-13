@@ -1,0 +1,30 @@
+#include <Arduino.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+#include <BleKeyboard.h>
+#include <Adafruit_NeoMatrix.h>
+
+BleKeyboard bleKeyboard;
+const int btnA = 36; // GPIO 36
+const int btnB = 4; // GPIO 4
+
+void setup() {
+  bleKeyboard.setName("Aueaphum Keyboard");
+  bleKeyboard.begin();
+  pinMode(btnA, INPUT_PULLUP); // ปรับเป็น INPUT_PULLUP เพื่อให้ปุ่มทำงานเมื่อกด และปล่อยปุ่ม แล้วจึงทำงาน 
+  pinMode(btnB, INPUT_PULLUP); 
+}
+
+void loop() {
+  if(bleKeyboard.isConnected()) {
+    if(digitalRead(btnA) == 0) { // ถ้าปุ่มถูกกด ให้ส่งค่า 'a' ไปยังคอมพิวเตอร์
+      bleKeyboard.write('a');
+    }
+    if(digitalRead(btnB) == 0) {
+      bleKeyboard.write('d'); // ถ้าปุ่มถูกกด ให้ส่งค่า 'd' ไปยังคอมพิวเตอร์
+    }
+  }
+  delay(100);
+}
+ 

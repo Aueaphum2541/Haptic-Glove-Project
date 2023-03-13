@@ -1,0 +1,30 @@
+#include <Arduino.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  Wire.begin(41,40);
+  if (!mpu.begin(0x68, &Wire)) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+sensors_event_t a, g, temp;
+mpu.getEvent(&a, &g, &temp);
+
+    /* Print out the values */
+Serial.print("AccelX:");
+Serial.print(a.acceleration.x);
+Serial.print(",");
+Serial.print("AccelY:");
+Serial.print(a.acceleration.y);
+Serial.print(",");
+Serial.print("AccelZ:");
+Serial.println(a.acceleration.z);

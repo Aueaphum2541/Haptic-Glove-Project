@@ -1,0 +1,19 @@
+const int btnA = 36; // GPIO 36 for button A
+const int btnB = 4; // GPIO 4 for button B
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(btnA, INPUT_PULLUP);
+  pinMode(btnB, INPUT_PULLUP);
+}
+
+void loop()
+{
+  if (digitalRead(btnA) == LOW) {
+    Serial.println("Button A pressed!");
+  }
+  else if (digitalRead(btnB)== LOW) {
+    Serial.println("Button B pressed!");
+  }
+}

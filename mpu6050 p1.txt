@@ -1,0 +1,48 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include <Adafruit_MPU6050.h>
+
+Adafruit_MPU6050 mpu;
+
+#define SDA_PIN 22
+#define SCL_PIN 21
+
+void setup() {
+  Wire.begin(SDA_PIN, SCL_PIN, 400000);
+  Serial.begin(115200);
+
+  if (!mpu.begin(0x69)) { // <-- use for AD0 high
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+
+  Serial.println("MPU6050 initialized!");
+}
+
+void loop() {
+  // Read accelerometer and gyroscope data
+  sensors_event_t accel_event, gyro_event, temp_event;
+  mpu.getEvent(&accel_event, &gyro_event, &temp_event);
+
+  // Print the data to the serial monitor
+  Serial.print("accelerometer (m/s^2): ");
+  Serial.print(accel_event.acceleration.x);
+  Serial.print(", ");
+  Serial.print(accel_event.acceleration.y);
+  Serial.print(", ");
+  Serial.println(accel_event.acceleration.z);
+
+  Serial.print("gyroscope (rad/s): ");
+  Serial.print(gyro_event.gyro.x);
+  Serial.print(", ");
+  Serial.print(gyro_event.gyro.y);
+  Serial.print(", ");
+  Serial.println(gyro_event.gyro.z);
+
+  Serial.print("temperature (C): ");
+  Serial.println(temp_event.temperature);
+
+  delay(1000);
+}
