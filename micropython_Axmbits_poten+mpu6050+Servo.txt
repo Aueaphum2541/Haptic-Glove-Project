@@ -1,0 +1,21 @@
+from machine import Pin, ADC, PWM
+import imu
+import time
+import utime
+
+potentiometer_pin = ADC(Pin(25))
+servo = PWM(Pin(14), freq=50)
+
+while True:
+    potentiometer_value = potentiometer_pin.read_u16()
+    print('Poten P0 =', potentiometer_value)
+    z_acc = int(imu.acc[2])
+    print('Z =', z_acc)
+    servo_duty = int(50 + ((potentiometer_value / 65535) * 65))
+    servo.duty(servo_duty)
+    for pos in range(0, 181, 1): 
+        servo.duty(int(50 + ((pos/180) * 65))) 
+        time.sleep_ms(15) 
+    for pos in range(180, -1, -1): 
+        servo.duty(int(50 + ((pos/180) * 65))) 
+        time.sleep_ms(15)

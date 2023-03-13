@@ -1,0 +1,10 @@
+from machine import Pin, ADC
+import utime
+
+potentiometer_pin = ADC(Pin(25))
+
+while True:
+    potentiometer_value = potentiometer_pin.read_u16()
+    print('Poten P0 =',potentiometer_value)
+    utime.sleep_ms(100)
+

@@ -1,0 +1,27 @@
+from machine import Pin, SoftI2C
+import time
+
+MBITS_I2C_ADDRESS = 0x08
+REG_ADD_SERVO_1 = 1
+
+def i2cWrite(address, data):
+    i2c = SoftI2C(scl=Pin(21), sda=Pin(22))
+    i2c.writeto_mem(MBITS_I2C_ADDRESS, address, bytes([data]))
+
+def setServoPosition(position):
+    position = min(max(position, 0), 180)
+    pulseWidth = int(position * 20 / 18 + 50)
+    i2cWrite(REG_ADD_SERVO_1, pulseWidth)
+
+i2c = SoftI2C(scl=Pin(22), sda=Pin(21))
+
+while True:
+    # Move the servo from 0 to 180 degrees in steps of 10
+    for angle in range(0, 181, 10):
+        setServoPosition(angle)
+        time.sleep(0.5)
+    
+    # Move the servo from 180 to 0 degrees in steps of 10
+    for angle in range(180, -1, -10):
+        setServoPosition(angle)
+        time.sleep(0.5)
